@@ -1,3 +1,107 @@
+
+function getTileWidth(){return themeOptions.tileWidth || $('.section .article').filter('[class*=single],.tall,.more,.emtpy').eq(0).outerWidth(true) || themeOptions.defaultTileWidth || 1; }
+function getTileHeight(){return themeOptions.tileHeight || $('.section .article').filter('[class*=single],.wide,.more,.emtpy').eq(0).outerHeight(true) || themeOptions.defaultTileWidth || 1;}
+
+function assemble(du, cdu) {
+	if ( typeof gridNum == 'undefined' ) {
+		chkMode();
+		return;
+	}
+	var delay = ie8 ? 5 : 0;
+	if ( !delay ) init();
+	else setTimeout( init, delay );
+	function init() {
+		$('#container').triggerHandler('assembleStart');
+		if ( !$('#container').data('initialized') ) du = 0;
+		else if ( typeof du == 'undefined' || du == null ) du = 800;
+		if ( typeof cdu == 'undefined' || cdu == null ) cdu = 0;
+		var cw = getTileWidth();
+		var ch = getTileHeight();
+		//console.log ( 'cw, ch : ' , cw , ch );
+		$('.section').each(function(i,o){
+			if ( $(o).css('display') == 'none' ) return true;
+			var $sec = $(this);
+			var tw = parseInt($('#container').css('maxWidth'));
+			var mat = [];
+			mat.push (getEmptyColumn(cw,tw));
+
+			$sec.find('.article:visible:not(.blank)').each(function(i,o){
+				var w = Math.ceil($(this).width() / cw);
+				var h = Math.ceil($(this).height() / ch);
+				var tx, ty, isPos = false;
+				//console.log ( 'w, h : ' , w , h );
+				for ( var i = 0 ; i < mat.length ; i++ ) {
+
+					for ( var j = 0 ; j < mat[i].length ; j++ ){
+
+						var chkW = mat[i][j] == 0 && j + w <= mat[i].length;
+						if ( chkW ) {
+							var cnt = 0;
+							for ( var k = j ; k < mat[i].length ; k++ ) {
+								cnt++;
+								if ( cnt <= w && mat[i][k] == 1 ) {chkW = false; break;}
+							}
+						}
+
+						if ( chkW ) {
+							var chkH = i == mat.length-1 || h == 1;
+							if ( !chkH ) {
+								var bln = true;
+								for ( k = i ; k < mat.length ; k++ ) {
+									if ( mat[k][j] == 1 ) { bln = false; break;}
+								};
+								chkH = bln;
+							}
+						}
+
+						if ( chkW && chkH ) {
+							isPos = true;
+							break;
+						}
+					}
+					if ( isPos ) break;
+				}
+
+				if ( !isPos ) {
+					i = mat.length;
+					j = 0;
+				}
+
+				for ( var l = 0 ; l < w ; l++ ) {
+					for ( var m = 0 ; m < h ; m++ ) {
+						if ( !mat[m+i] ) mat.push(getEmptyColumn(cw,tw));
+						mat[i+m][j+l] = 1;
+					}
+				}
+
+				if (!du)$(this).stop().css({'left':j*cw,'top':i*ch});
+				else $(this).stop().animate({'left':j*cw,'top':i*ch},{duration:du, easing:'easeInOutCubic'});
+				//trace ( mat );
+			});
+			if ( !cdu || !Math.min(cdu,du) ) $(this).height(mat.length*ch), $(window).triggerHandler('resize.sort');
+			else $(this).stop().animate({'height':mat.length*ch}, {duration:Math.min(cdu,du),easing:'easeInOutCubic', complete:function(){$(window).triggerHandler('resize.sort');}});
+
+			var emptyBlock = new Array();
+			for ( var i = 0 ; i < mat.length ; i++ ) {
+				for ( var j = 0 ; j < mat[i].length ; j++ ) {
+					if ( mat[i][j] == 0 ) emptyBlock.push({y:i,x:j});
+				}
+			}
+			$(o).data({'matrix':mat,'emptyBlock':emptyBlock,'du':du});
+		});
+		$('#container').data('gridNum', gridNum);
+		if ( assembleTimer ) clearTimeout( assembleTimer );
+		$('#container').triggerHandler('assembleAnimateStart');
+		assembleTimer = setTimeout( function(){$('#container').triggerHandler('assembleComp');}, du||1);
+	}
+
+	function getEmptyColumn ( cw, tw ) {
+		var arr = [];
+		for ( var i = 0 ; i < Math.floor(tw/cw) ; i++ ) { arr.push(0); }
+		return arr;
+	}
+}
+
 $.fn.assemble = function(opts){
 	if ( typeof gridNum == 'undefined' ) {
 		chkLayout();
