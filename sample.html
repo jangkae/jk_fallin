@@ -88,17 +88,29 @@
 		$('.btn_add').bind('click.jk_fallin', function(e){
 			addItem();
 		});
-
+		/*
 		addItem();
 		$('.wrap').jk_fallin();
+		*/
+		addItemRandomHeight();
+		$('.wrap').jk_fallin({
+			'type':'rectangle'
+		});
 	});
 
-	var $itemStr = '<div class="item"></div>';
+	var itemStr = '<div class="item"></div>';
 	var $wrap = $('.wrap');
 	function addItem(n){
 		if ( !n ) n = 10;
 		for ( var i = 0 ; i < n ; i++ ) {
-			$wrap.append($itemStr);
+			$wrap.append(itemStr);
+		}
+	}
+
+	function addItemRandomHeight(n){
+		if ( !n ) n = 10;
+		for ( var i = 0 ; i < n ; i++ ) {
+			$wrap.append($(itemStr).height(Math.round(Math.random()*200+100)));
 		}
 	}
 
