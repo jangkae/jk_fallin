@@ -13,226 +13,196 @@ var no = {
 	//event
 	'resize':'resize.jk_fallin'
 }
+window.Fallin = Fallin;
 
+function Fallin(cont, opts){
+	var _this = this;
+	var options = $.extend({}, $.fn.jk_fallin.defaults, opts);
+	var $cont = $(cont);
+	var $items = $cont.find(options.itemElem+':not(.default_item)');
+	var containerWidth, gridWidth, gridHeight, colNum;
 
-var methods = {
-	'init':function(opts){
-		//설정된 옵션이 없거나, 옵션 객체가 들어오면 옵션 설정.
-		//설정된 옵션이 있고, 옵션 객체가 들어오지 않으면 기존 옵션 그대로 실행.
-		var $this = this, options;
-		if ( !options || opts ) {
-			methods.resetOptions.call(this,opts,true);
+	//css 설정
+	$cont.css('position','relative').find(options.itemElem+':not(.default_item)').css('position','absolute');
+
+	$(window).bind(no.resize,function(){
+		var changedContWidth = containerWidth != $cont.width();
+		var changedColNum = colNum != getColNum();
+		var changedGridSize = gridWidth != getGridSize('width') || gridHeight != getGridSize('height');
+
+		if ( ( options.align != 'left' && changedContWidth ) || changedColNum || changedGridSize ) {
+			activeFn();
 		}
-		options = this.data(no.opts);
+	});
 
-		//css 설정
-		$this.css('position','relative')
-			.find(options.itemElem+':not(.default_item)').css('position','absolute');
+	activeFn();
+	function activeFn(){
+		containerWidth = $cont.width();
+		gridWidth = getGridSize('width');
+		gridHeight = getGridSize('height');
+		colNum = getColNum();
 
-		// 해당 요소가 init 되지 않았으면 window.resize 핸들러 등록.
-		$this.each(function(i,o){
-			var $cont = $(o);
-			if ( !$cont.data(no.init) ) {
-				$cont.data(no.init, true).data(no.ow, $cont.width());
-				$(window).bind(no.resize,function(){
-					// 컨테이너 width가 기존과 다르면 실행.
-					if ( $cont.data(no.ow) != $cont.width() ) {
-						//console.log ( '실행' );
-						methods.fallin.call($cont);
-						$cont.data(no.ow, $cont.width() );
-					}
-				});
-			}
-		});
+		//정사각형일때
+		if ( options.type == 'square' ) {
+			var mat = [];
+			mat.push ( getEmptyRow(gridWidth , containerWidth) );
 
-		return methods.fallin.call(this);
-	},
-	'fallin':function(){
-		var options = this.data(no.opts);
-		if ( !options ) options = $.fn.jk_fallin.defaults;
+			$items.each(function(idx,o){
+				var $item = $(o);
+				//정렬 할 요소가 없으면 return;
+				if ( !$item.length ) return;
 
-		return this.each(function(idx,o){
-			$cont = $(o);
-			var $items = $cont.find(options.itemElem+':not(.default_item)');
+				//현재 아이템이 matrix상 몇 칸을 차지 할 것인지 판단.
+				var w = Math.ceil($item.width() / gridWidth); 
+				var h = Math.ceil($item.height() / gridHeight);
+				var tx, ty, isPos = false; //투입가능한 상태저장
 
-			var containerWidth = $cont.width();
-			var gridWidth = getGridSize($cont, 'width');
-			var gridHeight = getGridSize($cont, 'height');
+				// matrix 첫번째 루프
+				for ( var i = 0 ; i < mat.length ; i++ ) {
+					// matrix 두번째 루프
+					for ( var j = 0 ; j < mat[i].length ; j++ ){
 
-			//정사각형일때
-			if ( options.type == 'square' ) {
-				var mat = [];
-				mat.push ( getEmptyRow(gridWidth , containerWidth) );
-
-				$items.each(function(idx,o){
-					var $item = $(o);
-					//정렬 할 요소가 없으면 return;
-					if ( !$item.length ) return;
-
-					//현재 아이템이 matrix상 몇 칸을 차지 할 것인지 판단.
-					var w = Math.ceil($item.width() / gridWidth); 
-					var h = Math.ceil($item.height() / gridHeight);
-					var tx, ty, isPos = false; //투입가능한 상태저장
-
-					// matrix 첫번째 루프
-					for ( var i = 0 ; i < mat.length ; i++ ) {
-						// matrix 두번째 루프
-						for ( var j = 0 ; j < mat[i].length ; j++ ){
-
-							// 0을 발견 하고 item w 값이 length를 넘지 않으면. 투입가능하다.
-							var chkW = mat[i][j] == 0 && j + w <= mat[i].length;
-							// 중간에 1이 있는지 확인. 없으면 true 상태
-							if ( chkW ) {
-								var cnt = 0;
-								for ( var k = j ; k < mat[i].length ; k++ ) {
-									cnt++;
-									if ( cnt <= w && mat[i][k] == 1 ) {chkW = false; break;}
-								}
-							}
-
-							//W가 가능하면 H를 계산.
-							if ( chkW ) {
-								//현재 i가 matrix의 끝에 있거나 h값이 1일때는 투입가능하다.
-								var chkH = i == mat.length-1 || h == 1;
-								if ( !chkH ) {
-									var bln = true;
-									for ( k = i ; k < mat.length ; k++ ) {
-										if ( mat[k][j] == 1 ) { bln = false; break;}
-									};
-									chkH = bln;
-								}
-							}
-
-							//W와 H가 모두 가능하면 투입가능함.
-							if ( chkW && chkH ) {
-								isPos = true;
-								break;
+						// 0을 발견 하고 item w 값이 length를 넘지 않으면. 투입가능하다.
+						var chkW = mat[i][j] == 0 && j + w <= mat[i].length;
+						// 중간에 1이 있는지 확인. 없으면 true 상태
+						if ( chkW ) {
+							var cnt = 0;
+							for ( var k = j ; k < mat[i].length ; k++ ) {
+								cnt++;
+								if ( cnt <= w && mat[i][k] == 1 ) {chkW = false; break;}
 							}
 						}
-						// 투입가능하면 빠져나간다.
-						if ( isPos ) break;
-					}
 
-					// 차지할 자리가 없으면 끝에 추가하기위한 변수 설정
-					if ( !isPos ) {
-						i = mat.length;
-						j = 0;
-					}
+						//W가 가능하면 H를 계산.
+						if ( chkW ) {
+							//현재 i가 matrix의 끝에 있거나 h값이 1일때는 투입가능하다.
+							var chkH = i == mat.length-1 || h == 1;
+							if ( !chkH ) {
+								var bln = true;
+								for ( k = i ; k < mat.length ; k++ ) {
+									if ( mat[k][j] == 1 ) { bln = false; break;}
+								};
+								chkH = bln;
+							}
+						}
 
-					// matrix에 추가.
-					for ( var l = 0 ; l < w ; l++ ) {
-						for ( var m = 0 ; m < h ; m++ ) {
-							if ( !mat[m+i] ) mat.push(getEmptyRow(gridWidth,containerWidth));
-							mat[i+m][j+l] = 1;
+						//W와 H가 모두 가능하면 투입가능함.
+						if ( chkW && chkH ) {
+							isPos = true;
+							break;
 						}
 					}
-
-					$item.data({
-						'jk_fallin.tx':j*(gridWidth+options.marginWidth) + getMarginValue(),
-						'jk_fallin.ty':i*(gridHeight+options.marginHeight)
-					});
-
-					//컨테이너 Height 컨트롤
-					if ( options.containerHeightControl ) {
-						$cont.height( mat.length * (gridHeight+options.marginHeight)-options.marginHeight);
-					}
-				});
-				// item each 끝.
-			} // 정사각형 일때 끝.
-			//직사각형일때
-			else if ( options.type == 'rectangle' ) {
-				var mat = getEmptyRow();
-
-				$items.each(function(i,o){
-					var $item = $(o);
-					//target column 요소가 들어갈 자리.
-					var tc = getMinIndex(mat);
-					$item.data({
-						'jk_fallin.tx':tc*(gridWidth+options.marginWidth) + getMarginValue(),
-						'jk_fallin.ty':mat[tc]
-					});
-					mat[tc] += $item.outerHeight(true) + options.marginHeight;
-				});
-
-				if ( options.containerHeightControl ) {
-					$cont.height( getMaxValue(mat)-options.marginHeight );
+					// 투입가능하면 빠져나간다.
+					if ( isPos ) break;
 				}
-			}// 직사각형일 때 끝.
 
-			$cont.data(no.matrix, mat);
-			//실제로 움직임.
+				// 차지할 자리가 없으면 끝에 추가하기위한 변수 설정
+				if ( !isPos ) {
+					i = mat.length;
+					j = 0;
+				}
+
+				// matrix에 추가.
+				for ( var l = 0 ; l < w ; l++ ) {
+					for ( var m = 0 ; m < h ; m++ ) {
+						if ( !mat[m+i] ) mat.push(getEmptyRow(gridWidth,containerWidth));
+						mat[i+m][j+l] = 1;
+					}
+				}
+
+				$item.data({
+					'jk_fallin.tx':j*(gridWidth+options.marginWidth) + getMarginValue(),
+					'jk_fallin.ty':i*(gridHeight+options.marginHeight)
+				});
+
+				//컨테이너 Height 컨트롤
+				if ( options.containerHeightControl ) {
+					$cont.height( mat.length * (gridHeight+options.marginHeight)-options.marginHeight);
+				}
+			});
+			// item each 끝.
+		} // 정사각형 일때 끝.
+		//직사각형일때
+		else if ( options.type == 'rectangle' ) {
+			var mat = getEmptyRow();
+
 			$items.each(function(i,o){
-				var $o = $(o);
-				$o.stop().css({
-					'left':$o.data('jk_fallin.tx'),
-					'top':$o.data('jk_fallin.ty')
-				})
+				var $item = $(o);
+				//target column 요소가 들어갈 자리.
+				var tc = getMinIndex(mat);
+				$item.data({
+					'jk_fallin.tx':tc*(gridWidth+options.marginWidth) + getMarginValue(),
+					'jk_fallin.ty':mat[tc]
+				});
+				mat[tc] += $item.outerHeight(true) + options.marginHeight;
 			});
 
-			// matrix에 빈 Row를 넣기 위함.
-			function getEmptyRow () {
-				var arr = [];
-				for ( var i = 0, t = getColNum() ; i < t ; i++ ) { arr.push(0); }
-				return arr;
+			if ( options.containerHeightControl ) {
+				$cont.height( getMaxValue(mat)-options.marginHeight );
 			}
+		}// 직사각형일 때 끝.
 
-			// 가로 column 개수를 리턴.
-			function getColNum(){
-				var colNum = Math.floor( ( containerWidth+options.marginWidth ) / ( gridWidth+options.marginWidth ) );
-				if ( colNum > $items.length ) colNum = $items.length;
-				return colNum;
-			}
+		this.matrix = mat;
 
-			// align으로 인한 left 추가값 계산 후 리턴.
-			function getMarginValue(){
-				//align 옵션에 의한 추가 x값
-				var v = 0;
-				var remainWidth = containerWidth-(getColNum()*(gridWidth+options.marginWidth)-options.marginWidth);
-				if ( options.align == 'center' ) {
-					v = remainWidth/2;
-				} else if ( options.align == 'right' ) {
-					v = remainWidth;
-				}
-				return v;
-			}
-
-		});
-	},
-	'resetOptions':function(opts, skipFallin){
-		//methods.init();
-		this.data(no.opts, $.extend({}, $.fn.jk_fallin.defaults, opts));
-		if ( !skipFallin ) methods.fallin.call(this);
-		return this;
-	},
-	'append':function(dom, effect){
-
-	},
-	'showGrid':function(){
-
-	}
-}
-
-// 최소단위
-function getGridSize( $cont, tar ){
-	var options = $cont.data(no.opts);
-	var optionAttr = 'itemWidth', method = 'outerWidth';
-	if ( tar == 'height' ) {
-		optionAttr = 'itemHeight';
-		method = 'outerHeight';
-	}
-	if ( options[optionAttr] ) {
-		return options[optionAttr];
-	} else {
-		var $defaultItem = $cont.find('.default_item');
-		if ( $defaultItem.length ) {
-			return $defaultItem[method]();
-		} else {
-			var returnValue = Number.MAX_VALUE;
-			$cont.find(options.itemElem).each(function(i,o){
-				var ow = $(o)[method]();
-				if ( ow < returnValue ) returnValue = ow;
+		//실제로 움직임.
+		$items.each(function(i,o){
+			var $o = $(o);
+			$o.stop().css({
+				'left':$o.data('jk_fallin.tx'),
+				'top':$o.data('jk_fallin.ty')
 			})
-			return returnValue;
+		});
+	}
+
+	function getColNum(){
+		var cw = $cont.width(), mw = options.marginWidth, gw = getGridSize('width');
+		var colNum = Math.floor( ( cw+mw ) / ( gw+mw ) );
+		if ( colNum > $items.length ) colNum = $items.length;
+		return colNum;
+	}
+
+	function getEmptyRow(){
+		var arr = [];
+		for ( var i = 0, t = getColNum() ; i < t ; i++ ) { arr.push(0); }
+		return arr;		
+	}
+
+	// align으로 인한 left 추가값 계산 후 리턴.
+	function getMarginValue(){
+		//align 옵션에 의한 추가 x값
+		var v = 0, cw = $cont.width(), mw = options.marginWidth, gw = getGridSize('width'), cn = getColNum() ;
+		//remain width 계산
+		var rw = cw-(cn*(gw+mw)-mw);
+		if ( options.align == 'center' ) {
+			v = rw/2;
+		} else if ( options.align == 'right' ) {
+			v = rw;
+		}
+		return v;		
+	}
+
+	//기본 grid 단위
+	function getGridSize(tar){
+		var optionAttr = 'itemWidth', method = 'outerWidth';
+
+		if ( tar == 'height' ) {
+			optionAttr = 'itemHeight';
+			method = 'outerHeight';
+		}
+		if ( options[optionAttr] ) {
+			return options[optionAttr];
+		} else {
+			var $defaultItem = $cont.find('.default_item');
+			if ( $defaultItem.length ) {
+				return $defaultItem[method]();
+			} else {
+				var returnValue = Number.MAX_VALUE;
+				$cont.find(options.itemElem).each(function(i,o){
+					var ow = $(o)[method]();
+					if ( ow < returnValue ) returnValue = ow;
+				})
+				return returnValue;
+			}
 		}
 	}
 }
@@ -258,6 +228,16 @@ function getMaxValue(arr){
 		}
 	}
 	return r;
+}
+
+
+// jQuery 플러그인 등록.
+var methods = {
+	'init':function(opts){
+		return this.each(function(i,o){
+			o.fallinObj = new Fallin(o, opts);
+		});
+	}
 }
 
 $.fn.jk_fallin = function(method) {

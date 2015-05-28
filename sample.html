@@ -92,10 +92,16 @@
 		addItem();
 		$('.wrap').jk_fallin();
 		*/
+		/*
 		addItemRandomHeight();
 		$('.wrap').jk_fallin({
 			'type':'rectangle'
 		});
+		*/
+
+		addItem();
+		dd = new Fallin($('.wrap')[0], {type:'rectangle'});
+		
 	});
 
 	var itemStr = '<div class="item"></div>';
