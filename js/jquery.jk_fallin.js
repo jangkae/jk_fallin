@@ -19,8 +19,7 @@ function Fallin(cont, opts){
 	var _this = this;
 	var options = $.extend({}, $.fn.jk_fallin.defaults, opts);
 	var $cont = $(cont);
-	var $items = $cont.find(options.itemElem+':not(.default_item)');
-	var containerWidth, gridWidth, gridHeight, colNum;
+	var $items, containerWidth, gridWidth, gridHeight, colNum;
 
 	//css 설정
 	$cont.css('position','relative').find(options.itemElem+':not(.default_item)').css('position','absolute');
@@ -37,6 +36,7 @@ function Fallin(cont, opts){
 
 	activeFn();
 	function activeFn(){
+		$items = $cont.find(options.itemElem+':not(.default_item)');
 		containerWidth = $cont.width();
 		gridWidth = getGridSize('width');
 		gridHeight = getGridSize('height');
@@ -205,6 +205,41 @@ function Fallin(cont, opts){
 			}
 		}
 	}
+
+	// type 판별해서 return, 현재는 옵션만 리턴.
+	function getBrickType(){
+		return options.type;
+	}
+	// public methods
+	this.append = append;
+	function append($dom, opts){
+		var options = $.extend({},{
+			'dir':null, // LT, LB, RT, RB or null : 제자리.
+			'effect':'fadeIn',
+			'fromElem':null // 방향설정 안하고 엘리먼트 위치부터. more버튼 같이.
+		},opts), fl, ft;
+		if ( typeof dom == 'string' ) dom = $(dom);
+
+		var $f = $(options.fromElem);
+		if ( $f.length ) {
+			fl = $f.css('left');
+			ft = $f.css('top');
+		} else {
+			var type = getBrickType();
+			var lt, lb, rt, rb;
+			switch( options.dir ) {
+				case : 'LB'
+
+				break;
+				default:
+				fl = ft = 0;
+				break;
+			}
+		}
+		dom.css('visibility', false);
+		$cont.append(dom);
+	}
+
 }
 
 // array 데이터중 가장 작은 수를 가진 index를 리턴.
@@ -230,6 +265,16 @@ function getMaxValue(arr){
 	return r;
 }
 
+function isIE8(){
+	// IE8 버전체크 
+	if ( navigator.userAgent ) {
+		var tridentStr = navigator.userAgent.match(/Trident\/[\d\.]*/);
+		if ( tridentStr ) {
+			return Number( tridentStr.toString().replace('Trident/','') ) < 5;
+		}
+	} 
+	return false;
+}
 
 // jQuery 플러그인 등록.
 var methods = {
@@ -266,13 +311,3 @@ $.fn.jk_fallin.defaults = {
 
 })(jQuery);
 
-function isIE8(){
-	// IE8 버전체크 
-	if ( navigator.userAgent ) {
-		var tridentStr = navigator.userAgent.match(/Trident\/[\d\.]*/);
-		if ( tridentStr ) {
-			return Number( tridentStr.toString().replace('Trident/','') ) < 5;
-		}
-	} 
-	return false;
-}
