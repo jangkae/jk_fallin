@@ -3,16 +3,16 @@
 if ( !$ ) return;
 
 /** options list
- * @type : String = 정사각형(square), 직사각형(rectangle), 자동판단(auto)
- * @itemWidth : Number = 가로 그리드 사용자 설정
- * @itemHeight : Number = 세로 그리드 사용자 설정(정사각형 type에만 적용됨.)
- * @itemElem : String || jQuery object = 정렬시킬 엘리먼트 셀렉터
- * @marginWidth : Number = 가로 여백 설정
- * @marginHeight : Number = 세로 여백 설정
- * @containerHeightControl : Boolean = 컨테이너의 height를 조작 할지 여부
- * @align : String = 왼쪽(left), 오른쪽(right), 가운데(center) 정렬
- * @skipInitMotion : Boolean = 최초실행시 애니메이션 없이 뿌려질지 여부
- * @duration : Number = 애니메이션 러닝타임. 0이면 애니메이션 없이 정렬
+ * @type {String} 정사각형(square), 직사각형(rectangle), 자동판단(auto)
+ * @itemWidth {Number} 가로 그리드 사용자 설정
+ * @itemHeight {Number} 세로 그리드 사용자 설정(정사각형 type에만 적용됨.)
+ * @itemElem {String || jQuery object} 정렬시킬 엘리먼트 셀렉터
+ * @marginWidth {Number} 가로 여백 설정
+ * @marginHeight {Number} 세로 여백 설정
+ * @containerHeightControl {Boolean} 컨테이너의 height를 조작 할지 여부
+ * @align {String} 왼쪽(left), 오른쪽(right), 가운데(center) 정렬
+ * @skipInitMotion {Boolean} 최초실행시 애니메이션 없이 뿌려질지 여부
+ * @duration {Number} 애니메이션 러닝타임. 0이면 애니메이션 없이 정렬
  **/
 
 var defaultOptions = {
