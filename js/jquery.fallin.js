@@ -31,16 +31,20 @@ var defaultOptions = {
 
 window.Fallin = Fallin;
 
-function Fallin(cont, opts){
+function Fallin(wrap, opts){
 	var _this = this;
 	var options = $.extend({}, defaultOptions, opts);
-	var $cont = $(cont);
+	var $cont = $('<div class="fallin_container" />');
 	var $items, containerWidth, gridWidth, gridHeight, colNum, mat;
+
+	//초기 container 설정
+	$(wrap).append($cont);
+
 
 	//css 설정
 	$cont.css('position','relative').find(options.itemElem+':not(.default_item)').css('position','absolute');
 
-	$(window).bind('resize.jk_fallin',function(){
+	$(window).bind('resize.fallin',function(){
 		var changedContWidth = containerWidth != $cont.width();
 		var changedColNum = colNum != getColNum();
 		var changedGridSize = gridWidth != getGridSize('width') || gridHeight != getGridSize('height');
@@ -53,7 +57,7 @@ function Fallin(cont, opts){
 	activeFn();
 
 	// public
-	cont.fallinObj = this;
+	wrap.fallinObj = this;
 
 	this.activeFn = activeFn;
 	this.append = append;
@@ -138,8 +142,8 @@ function Fallin(cont, opts){
 				}
 
 				$item.data({
-					'jk_fallin.tx':j*(gridWidth+options.marginWidth) + getMarginValue(),
-					'jk_fallin.ty':i*(gridHeight+options.marginHeight)
+					'fallin.tx':j*(gridWidth+options.marginWidth) + getMarginValue(),
+					'fallin.ty':i*(gridHeight+options.marginHeight)
 				});
 
 				//컨테이너 Height 컨트롤
@@ -158,8 +162,8 @@ function Fallin(cont, opts){
 				//target column 요소가 들어갈 자리.
 				var tc = getMinIndex(mat);
 				$item.data({
-					'jk_fallin.tx':tc*(gridWidth+options.marginWidth) + getMarginValue(),
-					'jk_fallin.ty':mat[tc]
+					'fallin.tx':tc*(gridWidth+options.marginWidth) + getMarginValue(),
+					'fallin.ty':mat[tc]
 				});
 				mat[tc] += $item.outerHeight(true) + options.marginHeight;
 			});
@@ -173,8 +177,8 @@ function Fallin(cont, opts){
 		$items.each(function(i,o){
 			var $o = $(o);
 			$o.stop().css({
-				'left':$o.data('jk_fallin.tx'),
-				'top':$o.data('jk_fallin.ty')
+				'left':$o.data('fallin.tx'),
+				'top':$o.data('fallin.ty')
 			});
 		});
 
@@ -334,17 +338,17 @@ var methods = {
 		return this.each(function(i,o){
 			if ( !o.fallinObj ) return;
 			o.fallinObj.resetOptions(opts);
-		})
+		});
 	}
 };
 
-$.fn.jk_fallin = function(method) {
+$.fn.fallin = function(method) {
 	if (methods[method]) {
 		return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
 	} else if (typeof method === 'object' || !method) {
 		return methods.init.apply(this, arguments);
 	} else {
-		$.error('Method '+method+' does not exist on jquery.jk_fallin');
+		$.error('Method '+method+' does not exist on jquery.fallin');
 	}
 };
 
