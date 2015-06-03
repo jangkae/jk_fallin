@@ -52,10 +52,14 @@ function Fallin(cont, opts){
 
 	activeFn();
 
-	// public methods
+	// public
+	cont.fallinObj = this;
+
 	this.activeFn = activeFn;
 	this.append = append;
 	this.resetOptions = resetOptions;
+	this.getMetrix = getMetrix;
+	
 
 	function activeFn(){
 		$items = $cont.find(options.itemElem+':not(.default_item)');
@@ -165,8 +169,6 @@ function Fallin(cont, opts){
 			}
 		}// 직사각형일 때 끝.
 
-		this.matrix = mat;
-
 		//실제로 움직임.
 		$items.each(function(i,o){
 			var $o = $(o);
@@ -175,6 +177,7 @@ function Fallin(cont, opts){
 				'top':$o.data('jk_fallin.ty')
 			});
 		});
+
 	}
 
 	function append($dom, opts){
@@ -183,7 +186,8 @@ function Fallin(cont, opts){
 			'effect':'fadeIn',
 			'fromElem':null // 방향설정 안하고 엘리먼트 위치부터. more버튼 같이.
 		},opts), fl, ft;
-		$cont.append($dom);
+		var $d = $($dom).addClass('fallin_added_default');
+		$cont.append($d);
 		activeFn();
 		/*
 		if ( typeof dom == 'string' ) dom = $(dom);
@@ -211,6 +215,10 @@ function Fallin(cont, opts){
 	function resetOptions(opts){
 		options = $.extend({}, defaultOptions, opts);
 		activeFn();
+	}
+
+	function getMetrix(){
+		return mat;
 	}
 
 	//private methods
@@ -286,6 +294,7 @@ function getMinIndex(arr){
 	return r;
 }
 
+//Utils
 // array 데이터중 가장 큰 수를 리턴.
 function getMaxValue(arr){
 	var r = Number.MIN_VALUE, i, len;
@@ -317,14 +326,14 @@ var methods = {
 	},
 	'append':function(dom){
 		return this.each(function(i,o){
-			if ( !o.fallinObj ) o.fallinObj = new Fallin();
-			o.append(dom);
+			if ( !o.fallinObj ) return;
+			o.fallinObj.append(dom);
 		});
 	},
 	'resetOptions':function(opts){
 		return this.each(function(i,o){
-			if ( !o.fallinObj ) o.fallinObj = new Fallin();
-			o.resetOptions(opts);
+			if ( !o.fallinObj ) return;
+			o.fallinObj.resetOptions(opts);
 		})
 	}
 };

@@ -42,6 +42,22 @@
 				position:absolute;
 			}
 
+			.fallin_added_default {
+				animation-name: fallin_added_default;
+				animation-duration: 0.5s;
+				transition-timing-function: ease-out;
+			}
+
+			@keyframes fallin_added_default {
+				from {
+					opacity: 0;
+					transform:scale(0);
+				}
+				to {
+					opacity:1;
+					transform:scale(1);
+				}
+			}
 
 
 			@media (min-width: 768px) {
@@ -101,24 +117,26 @@
 		});
 		*/
 
-		addItem();
 		dd = new Fallin($('.wrap')[0], {type:'rectangle'});
-		
+		//dd = new Fallin($('.wrap')[0], {type:'square'});
+		addItem();
 	});
 
 	var itemStr = '<div class="item"></div>';
 	var $wrap = $('.wrap');
 	function addItem(n){
 		if ( !n ) n = 10;
+		var s = '';
 		for ( var i = 0 ; i < n ; i++ ) {
-			$wrap.append(itemStr);
+			s += itemStr;
 		}
+		$wrap.jk_fallin('append', s);
 	}
 
 	function addItemRandomHeight(n){
 		if ( !n ) n = 10;
 		for ( var i = 0 ; i < n ; i++ ) {
-			$wrap.append($(itemStr).height(Math.round(Math.random()*200+100)));
+			$wrap.jk_fallin('append', $(itemStr).height(Math.round(Math.random()*200+100)));
 		}
 	}
 
