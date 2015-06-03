@@ -2,17 +2,18 @@
 
 if ( !$ ) return;
 
-//이벤트와 데이터 이름 함축. name object
-var no = {
-	//data-
-	'init':'jk_fallin.initialized',
-	'ow':'jk_fallin.oldWidth',
-	'opts':'jk_fallin.options',
-	'matrix':'jk_fallin.matrix',
-	'col':'jk_fallin.column',
-	//event
-	'resize':'resize.jk_fallin'
-};
+/** options list
+ * @type : String = 정사각형(square), 직사각형(rectangle), 자동판단(auto)
+ * @itemWidth : Number = 가로 그리드 사용자 설정
+ * @itemHeight : Number = 세로 그리드 사용자 설정(정사각형 type에만 적용됨.)
+ * @itemElem : String || jQuery object = 정렬시킬 엘리먼트 셀렉터
+ * @marginWidth : Number = 가로 여백 설정
+ * @marginHeight : Number = 세로 여백 설정
+ * @containerHeightControl : Boolean = 컨테이너의 height를 조작 할지 여부
+ * @align : String = 왼쪽(left), 오른쪽(right), 가운데(center) 정렬
+ * @skipInitMotion : Boolean = 최초실행시 애니메이션 없이 뿌려질지 여부
+ * @duration : Number = 애니메이션 러닝타임. 0이면 애니메이션 없이 정렬
+ **/
 
 var defaultOptions = {
 	type:'square', //'rectangle'
@@ -39,7 +40,7 @@ function Fallin(cont, opts){
 	//css 설정
 	$cont.css('position','relative').find(options.itemElem+':not(.default_item)').css('position','absolute');
 
-	$(window).bind(no.resize,function(){
+	$(window).bind('resize.jk_fallin',function(){
 		var changedContWidth = containerWidth != $cont.width();
 		var changedColNum = colNum != getColNum();
 		var changedGridSize = gridWidth != getGridSize('width') || gridHeight != getGridSize('height');
@@ -50,6 +51,12 @@ function Fallin(cont, opts){
 	});
 
 	activeFn();
+
+	// public methods
+	this.activeFn = activeFn;
+	this.append = append;
+	this.resetOptions = resetOptions;
+
 	function activeFn(){
 		$items = $cont.find(options.itemElem+':not(.default_item)');
 		containerWidth = $cont.width();
@@ -170,6 +177,43 @@ function Fallin(cont, opts){
 		});
 	}
 
+	function append($dom, opts){
+		var options = $.extend({},{
+			'dir':null, // LT, LB, RT, RB or null = 제자리.
+			'effect':'fadeIn',
+			'fromElem':null // 방향설정 안하고 엘리먼트 위치부터. more버튼 같이.
+		},opts), fl, ft;
+		$cont.append($dom);
+		activeFn();
+		/*
+		if ( typeof dom == 'string' ) dom = $(dom);
+		var $f = $(options.fromElem);
+		if ( $f.length ) {
+			fl = $f.css('left');
+			ft = $f.css('top');
+		} else {
+			var type = getBrickType();
+			var lt, lb, rt, rb;
+			switch( options.dir ) {
+				case 'LB' : 
+
+				break;
+				default:
+				fl = ft = 0;
+				break;
+			}
+		}
+		dom.css('visibility', false);
+		$cont.append(dom);
+		*/
+	}
+
+	function resetOptions(opts){
+		options = $.extend({}, defaultOptions, opts);
+		activeFn();
+	}
+
+	//private methods
 	function getColNum(){
 		var cw = $cont.width(), mw = options.marginWidth, gw = getGridSize('width');
 		var colNum = Math.floor( ( cw+mw ) / ( gw+mw ) );
@@ -226,38 +270,7 @@ function Fallin(cont, opts){
 		return options.type;
 	}
 	
-	// public methods
-	this.append = append;
-	function append($dom, opts){
-		var options = $.extend({},{
-			'dir':null, // LT, LB, RT, RB or null = 제자리.
-			'effect':'fadeIn',
-			'fromElem':null // 방향설정 안하고 엘리먼트 위치부터. more버튼 같이.
-		},opts), fl, ft;
-		$cont.append($dom);
-		activeFn();
-		/*
-		if ( typeof dom == 'string' ) dom = $(dom);
-		var $f = $(options.fromElem);
-		if ( $f.length ) {
-			fl = $f.css('left');
-			ft = $f.css('top');
-		} else {
-			var type = getBrickType();
-			var lt, lb, rt, rb;
-			switch( options.dir ) {
-				case 'LB' : 
 
-				break;
-				default:
-				fl = ft = 0;
-				break;
-			}
-		}
-		dom.css('visibility', false);
-		$cont.append(dom);
-		*/
-	}
 
 }
 
@@ -307,6 +320,12 @@ var methods = {
 			if ( !o.fallinObj ) o.fallinObj = new Fallin();
 			o.append(dom);
 		});
+	},
+	'resetOptions':function(opts){
+		return this.each(function(i,o){
+			if ( !o.fallinObj ) o.fallinObj = new Fallin();
+			o.resetOptions(opts);
+		})
 	}
 };
 
