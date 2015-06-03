@@ -1,0 +1,26 @@
+{
+  "name": "jangkae",
+  "version": "0.0.1",
+  "description": "sort html element plugin",
+  "main": "index.js",
+  "dependencies": {
+    "grunt": "^0.4.5"
+  },
+  "devDependencies": {
+    "grunt-contrib-uglify": "^0.9.1",
+    "jshint-stylish": "^2.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jangkae/jk_fallin.git"
+  },
+  "author": "jangkae",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jangkae/jk_fallin/issues"
+  },
+  "homepage": "http://jangkae.com"
+}

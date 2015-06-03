@@ -12,14 +12,29 @@ var no = {
 	'col':'jk_fallin.column',
 	//event
 	'resize':'resize.jk_fallin'
-}
+};
+
+var defaultOptions = {
+	type:'square', //'rectangle'
+	itemWidth:0,
+	itemHeight:0,
+	itemElem:'> *',
+	marginWidth:20,
+	marginHeight:20,
+	containerHeightControl:true,
+	align:'center',
+	//나중에 모션 처리 할 것.
+	skipFirstMotion:false,
+	duration:300
+};
+
 window.Fallin = Fallin;
 
 function Fallin(cont, opts){
 	var _this = this;
-	var options = $.extend({}, $.fn.jk_fallin.defaults, opts);
+	var options = $.extend({}, defaultOptions, opts);
 	var $cont = $(cont);
-	var $items, containerWidth, gridWidth, gridHeight, colNum;
+	var $items, containerWidth, gridWidth, gridHeight, colNum, mat;
 
 	//css 설정
 	$cont.css('position','relative').find(options.itemElem+':not(.default_item)').css('position','absolute');
@@ -44,7 +59,7 @@ function Fallin(cont, opts){
 
 		//정사각형일때
 		if ( options.type == 'square' ) {
-			var mat = [];
+			mat = [];
 			mat.push ( getEmptyRow(gridWidth , containerWidth) );
 
 			$items.each(function(idx,o){
@@ -55,19 +70,20 @@ function Fallin(cont, opts){
 				//현재 아이템이 matrix상 몇 칸을 차지 할 것인지 판단.
 				var w = Math.ceil($item.width() / gridWidth); 
 				var h = Math.ceil($item.height() / gridHeight);
-				var tx, ty, isPos = false; //투입가능한 상태저장
+				var tx, ty; //투입가능한 상태저장
+				var i, j, k, l, m, chkW, chkH, isPos = false;
 
 				// matrix 첫번째 루프
-				for ( var i = 0 ; i < mat.length ; i++ ) {
+				for ( i = 0 ; i < mat.length ; i++ ) {
 					// matrix 두번째 루프
-					for ( var j = 0 ; j < mat[i].length ; j++ ){
+					for ( j = 0 ; j < mat[i].length ; j++ ){
 
 						// 0을 발견 하고 item w 값이 length를 넘지 않으면. 투입가능하다.
-						var chkW = mat[i][j] == 0 && j + w <= mat[i].length;
+						chkW = mat[i][j] === 0 && j + w <= mat[i].length;
 						// 중간에 1이 있는지 확인. 없으면 true 상태
 						if ( chkW ) {
 							var cnt = 0;
-							for ( var k = j ; k < mat[i].length ; k++ ) {
+							for ( k = j ; k < mat[i].length ; k++ ) {
 								cnt++;
 								if ( cnt <= w && mat[i][k] == 1 ) {chkW = false; break;}
 							}
@@ -76,12 +92,12 @@ function Fallin(cont, opts){
 						//W가 가능하면 H를 계산.
 						if ( chkW ) {
 							//현재 i가 matrix의 끝에 있거나 h값이 1일때는 투입가능하다.
-							var chkH = i == mat.length-1 || h == 1;
+							chkH = i == mat.length-1 || h == 1;
 							if ( !chkH ) {
 								var bln = true;
 								for ( k = i ; k < mat.length ; k++ ) {
 									if ( mat[k][j] == 1 ) { bln = false; break;}
-								};
+								}
 								chkH = bln;
 							}
 						}
@@ -103,8 +119,8 @@ function Fallin(cont, opts){
 				}
 
 				// matrix에 추가.
-				for ( var l = 0 ; l < w ; l++ ) {
-					for ( var m = 0 ; m < h ; m++ ) {
+				for ( l = 0 ; l < w ; l++ ) {
+					for ( m = 0 ; m < h ; m++ ) {
 						if ( !mat[m+i] ) mat.push(getEmptyRow(gridWidth,containerWidth));
 						mat[i+m][j+l] = 1;
 					}
@@ -124,7 +140,7 @@ function Fallin(cont, opts){
 		} // 정사각형 일때 끝.
 		//직사각형일때
 		else if ( options.type == 'rectangle' ) {
-			var mat = getEmptyRow();
+			mat = getEmptyRow();
 
 			$items.each(function(i,o){
 				var $item = $(o);
@@ -150,7 +166,7 @@ function Fallin(cont, opts){
 			$o.stop().css({
 				'left':$o.data('jk_fallin.tx'),
 				'top':$o.data('jk_fallin.ty')
-			})
+			});
 		});
 	}
 
@@ -169,7 +185,6 @@ function Fallin(cont, opts){
 
 	// align으로 인한 left 추가값 계산 후 리턴.
 	function getMarginValue(){
-		//align 옵션에 의한 추가 x값
 		var v = 0, cw = $cont.width(), mw = options.marginWidth, gw = getGridSize('width'), cn = getColNum() ;
 		//remain width 계산
 		var rw = cw-(cn*(gw+mw)-mw);
@@ -200,7 +215,7 @@ function Fallin(cont, opts){
 				$cont.find(options.itemElem).each(function(i,o){
 					var ow = $(o)[method]();
 					if ( ow < returnValue ) returnValue = ow;
-				})
+				});
 				return returnValue;
 			}
 		}
@@ -210,16 +225,19 @@ function Fallin(cont, opts){
 	function getBrickType(){
 		return options.type;
 	}
+	
 	// public methods
 	this.append = append;
 	function append($dom, opts){
 		var options = $.extend({},{
-			'dir':null, // LT, LB, RT, RB or null : 제자리.
+			'dir':null, // LT, LB, RT, RB or null = 제자리.
 			'effect':'fadeIn',
 			'fromElem':null // 방향설정 안하고 엘리먼트 위치부터. more버튼 같이.
 		},opts), fl, ft;
+		$cont.append($dom);
+		activeFn();
+		/*
 		if ( typeof dom == 'string' ) dom = $(dom);
-
 		var $f = $(options.fromElem);
 		if ( $f.length ) {
 			fl = $f.css('left');
@@ -228,7 +246,7 @@ function Fallin(cont, opts){
 			var type = getBrickType();
 			var lt, lb, rt, rb;
 			switch( options.dir ) {
-				case : 'LB'
+				case 'LB' : 
 
 				break;
 				default:
@@ -238,6 +256,7 @@ function Fallin(cont, opts){
 		}
 		dom.css('visibility', false);
 		$cont.append(dom);
+		*/
 	}
 
 }
@@ -280,10 +299,16 @@ function isIE8(){
 var methods = {
 	'init':function(opts){
 		return this.each(function(i,o){
-			o.fallinObj = new Fallin(o, opts);
+			if ( !o.fallinObj ) o.fallinObj = new Fallin(o, opts);
+		});
+	},
+	'append':function(dom){
+		return this.each(function(i,o){
+			if ( !o.fallinObj ) o.fallinObj = new Fallin();
+			o.append(dom);
 		});
 	}
-}
+};
 
 $.fn.jk_fallin = function(method) {
 	if (methods[method]) {
@@ -291,23 +316,11 @@ $.fn.jk_fallin = function(method) {
 	} else if (typeof method === 'object' || !method) {
 		return methods.init.apply(this, arguments);
 	} else {
-		$.error('Method '+method+' does not exist on jQuery.jk_fallin');
+		$.error('Method '+method+' does not exist on jquery.jk_fallin');
 	}
-}
+};
 
-$.fn.jk_fallin.defaults = {
-	type:'square', //'rectangle'
-	itemWidth:0,
-	itemHeight:0,
-	itemElem:'> *',
-	marginWidth:20,
-	marginHeight:20,
-	containerHeightControl:true,
-	align:'center',
-	//나중에 모션 처리 할 것.
-	skipFirstMotion:false,
-	duration:300
-}
+
 
 })(jQuery);
 
