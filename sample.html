@@ -9,7 +9,7 @@
 
 		<title>jk_fallin plugin sample</title>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-		<script src="./js/jquery.jk_fallin.js"></script>
+		<script src="./js/jquery.fallin.js"></script>
 
 		<style>
 			body {
@@ -99,7 +99,7 @@
 			<button class="btn_add">요소추가</button>
 			<button class="btn_reset">리셋</button>
 		</div>
-		<div class="wrap"></div>
+		<div class="wrap"><div class="item"></div><div class="item"></div><div class="item"></div><div class="item"></div><div class="item"></div></div>
 
 <script>
 	$(document).ready(function(){
@@ -119,7 +119,7 @@
 
 		dd = new Fallin($('.wrap')[0], {type:'rectangle'});
 		//dd = new Fallin($('.wrap')[0], {type:'square'});
-		addItem();
+		//addItem();
 	});
 
 	var itemStr = '<div class="item"></div>';
@@ -130,7 +130,7 @@
 		for ( var i = 0 ; i < n ; i++ ) {
 			s += itemStr;
 		}
-		$wrap.jk_fallin('append', s);
+		$wrap.fallin('append', s);
 	}
 
 	function addItemRandomHeight(n){
