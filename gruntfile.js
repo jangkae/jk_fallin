@@ -27,5 +27,5 @@
  
     // Default task(s).
     grunt.registerTask('default', ['uglify', 'jshint']); //grunt 명령어로 실행할 작업
- 
+
 };

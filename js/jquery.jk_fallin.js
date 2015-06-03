@@ -102,7 +102,7 @@ function Fallin(cont, opts){
 							}
 						}
 
-						//W와 H가 모두 가능하면 투입가능함.
+						//W와 H가 모두 가능하면 투입가능함. 
 						if ( chkW && chkH ) {
 							isPos = true;
 							break;
