@@ -29,28 +29,32 @@ var defaultOptions = {
 };
 
 window.Fallin = Fallin;
+Fallin.counter = 0;
 
 function Fallin(wrap, opts){
 	var _this = this;
 	var options = $.extend({}, defaultOptions, opts);
-	var $wrap = $(wrap).addClass('fallin_wrap');
+	var $wrap = wrap instanceof $ ? wrap : $(wrap);
 	var $cont = $('<div class="fallin_container" />');
 	var $items, wrapWidth, gridWidth, gridHeight, colNum, mat;
 
 	//초기 container 설정
+	$wrap.addClass('fallin_wrap');
 	if ( $wrap.find('> *').length ) $cont.append($wrap.find('> *')).appendTo($wrap);
 
 	//css 설정
-	$cont.css('position','relative').find(options.itemElem).filter(':not(.default_item)').css('position','absolute');
+	$cont.css('position','relative');
+	getItems().css('position','absolute');
 
 	$(window).bind('resize.fallin',function(){
-		var changedContWidth = wrapWidth != $wrap.width();
+		var changedWrapWidth = wrapWidth != $wrap.width();
 		var changedColNum = colNum != getColNum();
 		var changedGridSize = gridWidth != getGridSize('width') || gridHeight != getGridSize('height');
+		var isResetState = changedColNum || changedGridSize;
 
-		if ( ( options.align != 'left' && changedContWidth ) || changedColNum || changedGridSize ) {
-			activeFn();
-		}
+		//다른것은 변하지 않고 wrapWidth만 변경되면 container만 움직임. 아니면 activeFn
+		if ( isResetState ) activeFn();
+		else if ( changedWrapWidth && options.align != 'left' ) containerMove();
 	});
 
 	var du = options.skipFirstMotion ? 0 : options.duration;
@@ -64,6 +68,8 @@ function Fallin(wrap, opts){
 	this.resetOptions = resetOptions;
 	this.getMetrix = getMetrix;
 	
+	//counter++
+	Fallin.counter++;	
 
 	function activeFn(du){
 		console.log ( 'activeFn' );
@@ -179,21 +185,7 @@ function Fallin(wrap, opts){
 			}
 		}// 직사각형일 때 끝.
 
-
-		$cont.stop();
-		var contProp = {
-			'left':getMarginValue(),
-			'width':getColNum()*(gridWidth+options.marginWidth)-options.marginWidth
-		};
-		if ( options.containerHeightControl ) contProp.height = contHeight;
-		if ( du ) {
-			$cont.animate(contProp, {
-				'easing':'easeOutCubic',
-				'duration':du
-			});
-		} else {
-			$cont.css(contProp);
-		}
+		containerMove(contHeight, du);
 
 		$items.each(function(i,o){
 			var $o = $(o).stop();
@@ -213,13 +205,31 @@ function Fallin(wrap, opts){
 
 	}
 
+	function containerMove( contHeight, du ){
+		wrapWidth = $wrap.width();
+		$cont.stop();
+		var contProp = {
+			'left':getMarginValue(),
+			'width':getColNum()*(gridWidth+options.marginWidth)-options.marginWidth
+		};
+		if ( options.containerHeightControl && contHeight ) contProp.height = contHeight;
+		if ( du ) {
+			$cont.animate(contProp, {
+				'easing':'easeOutCubic',
+				'duration':du
+			});
+		} else {
+			$cont.css(contProp);
+		}
+	}
+
 	function append($dom, opts){
 		var options = $.extend({},{
 			'dir':null, // LT, LB, RT, RB or null = 제자리.
 			'effect':'fadeIn',
 			'fromElem':null // 방향설정 안하고 엘리먼트 위치부터. more버튼 같이.
 		},opts), fl, ft;
-		var $d = $($dom).addClass('fallin_added_default');
+		var $d = $($dom).addClass('fallin_added_fadeIn').css('position','absolute');
 		$cont.append($d);
 		activeFn(0);
 		/*
@@ -311,6 +321,9 @@ function Fallin(wrap, opts){
 		return options.type;
 	}
 	
+	function getItems(){
+		return $cont.find(options.itemElem).filter(':not(.default_item)');
+	}
 
 
 }
@@ -354,7 +367,7 @@ function isIE8(){
 var methods = {
 	'init':function(opts){
 		return this.each(function(i,o){
-			if ( !o.fallinObj ) o.fallinObj = new Fallin(o, opts);
+			o.fallinObj = new Fallin(o, opts);
 		});
 	},
 	'append':function(dom){
@@ -368,6 +381,16 @@ var methods = {
 			if ( !o.fallinObj ) return;
 			o.fallinObj.resetOptions(opts);
 		});
+	},
+	'getFallinObject':function(){
+		if ( this.length == 1 ) return this[0].fallinObj;
+		else if ( this.length > 1 ) {
+			var arr = [];
+			this.each(function(i,o){
+				arr.push ( o.fallinObj );
+			});
+			return arr;
+		} else return false;
 	}
 };
 
@@ -381,19 +404,36 @@ $.fn.fallin = function(method) {
 	}
 };
 
-//기본사용 easing
-jQuery.extend( jQuery.easing, {
-	easeInCubic: function (x, t, b, c, d) {
-		return c*(t/=d)*t*t + b;
-	},
-	easeOutCubic: function (x, t, b, c, d) {
-		return c*((t=t/d-1)*t*t + 1) + b;
-	},
-	easeInOutCubic: function (x, t, b, c, d) {
-		if ((t/=d/2) < 1) return c/2*t*t*t + b;
-		return c/2*((t-=2)*t*t + 2) + b;
-	}
+//html 설정
+$(function(){
+
+	$('.fallin_wrap').each(function(i,o){
+		var dt = $(o).data('fallin-options'), options;
+		//constructor가 Object 형식이 아니면 default로 진행.
+		if ( dt.constructor !== Object ) {
+			console.error( 'fallin : options은 JSON 형태로 입력해주세요.')
+			dt = null;
+		}
+		o.fallinObj = new Fallin(o, options);
+	});
+
 });
+
+//기본사용 easing
+if ( !$.easing.easeOutCubic ) {
+	$.extend( $.easing, {
+		easeInCubic: function (x, t, b, c, d) {
+			return c*(t/=d)*t*t + b;
+		},
+		easeOutCubic: function (x, t, b, c, d) {
+			return c*((t=t/d-1)*t*t + 1) + b;
+		},
+		easeInOutCubic: function (x, t, b, c, d) {
+			if ((t/=d/2) < 1) return c/2*t*t*t + b;
+			return c/2*((t-=2)*t*t + 2) + b;
+		}
+	});
+}
 
 })(jQuery);
 

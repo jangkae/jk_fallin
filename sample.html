@@ -8,6 +8,9 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 
 		<title>jk_fallin plugin sample</title>
+
+		<link href="./css/jquery.fallin.css" rel="stylesheet" type="text/css">
+
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 		<script src="./js/jquery.fallin.js"></script>
 
@@ -41,24 +44,6 @@
 				background:#999;
 				position:absolute;
 			}
-
-			.fallin_added_default {
-				animation-name: fallin_added_default;
-				animation-duration: 0.5s;
-				transition-timing-function: ease-out;
-			}
-
-			@keyframes fallin_added_default {
-				from {
-					opacity: 0;
-					transform:scale(0);
-				}
-				to {
-					opacity:1;
-					transform:scale(1);
-				}
-			}
-
 
 			@media (min-width: 768px) {
 				.wrap{
@@ -99,7 +84,12 @@
 			<button class="btn_add">요소추가</button>
 			<button class="btn_reset">리셋</button>
 		</div>
+		
 		<div class="wrap"><div class="item"></div><div class="item"></div><div class="item"></div><div class="item"></div><div class="item"></div></div>
+		
+		<!--
+		<div class="wrap fallin_wrap" data-fallin-options='{"marginWidth":20,"marginHeight":20}'><div class="item"></div><div class="item"></div><div class="item"></div><div class="item"></div><div class="item"></div></div>
+		-->
 
 <script>
 	$(document).ready(function(){
@@ -117,8 +107,8 @@
 		});
 		*/
 
-		dd = new Fallin($('.wrap')[0], {type:'rectangle'});
-		//dd = new Fallin($('.wrap')[0], {type:'square'});
+		//dd = new Fallin($('.wrap')[0], {type:'rectangle'});
+		dd = new Fallin($('.wrap')[0], {type:'square'});
 		//addItem();
 	});
 
