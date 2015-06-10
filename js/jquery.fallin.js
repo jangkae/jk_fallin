@@ -1,7 +1,7 @@
 (function($){
 
 if ( !$ ) return;
-
+if ( !window.console ) console = {"log":function(){},"error":function(){}};
 /** options list
  * type {String} 정사각형(square), 직사각형(rectangle), 자동판단(auto)
  * itemWidth {Number} 가로 그리드 사용자 설정
@@ -167,7 +167,7 @@ function Fallin(wrap, opts){
 					'fallin.ty':i*(gridHeight+options.marginHeight)
 				});
 
-				console.log ( $item.data() );
+				//console.log ( $item.data() );
 				//컨테이너 Height 컨트롤
 				if ( options.containerHeightControl ) {
 					contHeight = mat.length * (gridHeight+options.marginHeight)-options.marginHeight;
@@ -207,9 +207,11 @@ function Fallin(wrap, opts){
 	function itemMove($item, du) {
 		$item.stop();
 		var prop = {
-			'left':$item.data('fallin.tx'),
-			'top':$item.data('fallin.ty')
+			"left":$item.data('fallin.tx'),
+			"top":$item.data('fallin.ty')
 		};
+		//위치가 같으면 return;
+		if ( isSamePos(prop, $item.position()) ) return;
 		if ( du ) {
 			$item.animate(prop, {
 				'easing':options.easing,
@@ -220,7 +222,6 @@ function Fallin(wrap, opts){
 		}
 	}
 
-
 	function containerMove( contHeight, du ){
 		wrapWidth = $wrap.width();
 		$cont.stop();
@@ -229,7 +230,8 @@ function Fallin(wrap, opts){
 			'width':getColNum()*(gridWidth+options.marginWidth)-options.marginWidth
 		};
 		if ( options.containerHeightControl && contHeight ) contProp.height = contHeight;
-		
+		//위치와 높이가 같으면 return;
+		if ( isSamePos(contProp, $cont.position()) && $cont.height() == contHeight ) return;
 		//	duration을 적용할지 말지 고민. duration없이 append시 순간적으로 이동함.
 		if ( du ) {
 			$cont.animate(contProp, {
@@ -249,7 +251,7 @@ function Fallin(wrap, opts){
 			left : 왼쪽부터
 			right : 오른쪽에서 부터
 			end : 아이템중 마지막 다음부터
-			element : 특정 엘리먼트 부터 (바깥 것도 계산해야겠군)
+			element : 특정 엘리먼트 부터
 			pos : 특정 좌표에서부터
 			*/
 			'from':'default',
@@ -273,54 +275,26 @@ function Fallin(wrap, opts){
 				op.from = 'default';
 			}
 		}
-		//console.log ( opts );
+		
+		//등장효과 클래스 정의
 		var applyClass = 'fallin_added_default';
 		if ( op.effect == 'fadeIn' ) applyClass = 'fallin_added_fadeIn';
 
 		var $d = $(dom).css('position','absolute');
 		var du = 0, tx, ty, fo, co, delay;
-		var bt = getBrickType();
-		switch ( op.from ) {
-			case 'left' :
-			tx = 0;
-			ty = $cont.height() + options.marginHeight;
-			break;
-			case 'right' :
-			tx = $cont.width() - getGridSize('height');
-			ty = $cont.height() + options.marginHeight;
-			break;
-			case 'end' :
-			fo = getItems().filter(':last').offset();
-			co = $cont.offset();
-			tx = fo.left - co.left;
-			ty = fo.top - co.top;
-			break;
-			case 'pos' :
-			tx = op.fromLeft;
-			ty = op.fromTop;
-			break;
-			case 'element' :
-			default :
-			break;
-		}
 
+		//등장방향
 		if ( op.from != 'default' ) {
 			du = op.duration;
 			delay = op.delay;
-			$d.css({
-				'left':tx,
-				'top':ty, 
-				'visibility':'hidden'
-			});
 		}
 
-		$cont.append($d);
+		$cont.append($d.css('visibility','hidden'));
 
 		if ( delay ) {
 			$d.addClass('fallin_adding');
 			setTargetPosition();
 			containerMove(contHeight, du);
-			console.log ( getItems().filter(':not(.fallin_adding)') );
 			getItems().filter(':not(.fallin_adding)').each(function(i,o){
 				itemMove($(o), du);
 			});
@@ -328,22 +302,44 @@ function Fallin(wrap, opts){
 			$d.each(function(i,o){
 				var $o = $(o);
 				setTimeout(function(){
-					if ( op.from == 'element') {
+					switch ( op.from ) {
+						case 'left' :
+						tx = 0;
+						ty = $cont.height() + options.marginHeight;
+						break;
+						case 'right' :
+						tx = $cont.width() - getGridSize('height');
+						ty = $cont.height() + options.marginHeight;
+						break;
+						case 'end' :
+						fo = getItems().filter(':last').offset();
+						co = $cont.offset();
+						tx = fo.left - co.left;
+						ty = fo.top - co.top;
+						break;
+						case 'pos' :
+						tx = op.fromLeft;
+						ty = op.fromTop;
+						break;
+						case 'element' : 
 						fo = $(op.fromElem).offset();
 						co = $cont.offset();
 						tx = fo.left - co.left;
 						ty = fo.top - co.top;
-						$o.css({
-							'left':tx,
-							'top':ty
-						});
+						break;
+						default :
+						break;
 					}
-					$o.css('visibility','visible').addClass(applyClass);
+					$o.css({
+						'left':tx,
+						'top':ty,
+						'visibility':'visible'
+					}).addClass(applyClass);
 					itemMove($o, du);
 				}, op.delay*i);
 			});
 		} else {
-			$d.css('visibility', 'visible').addClass(applyClass);
+			$d.addClass(applyClass).css('visibility', 'visible');
 			activeFn(du);
 		}
 
@@ -393,13 +389,15 @@ function Fallin(wrap, opts){
 			optionAttr = 'itemHeight';
 			method = 'outerHeight';
 		}
+		//options에 설정한 값이 있으면 return;
 		if ( options[optionAttr] ) {
 			return options[optionAttr];
 		} else {
 			var $defaultItem = $cont.find('.default_item');
+			//default item이 있으면 item 크기를 return;
 			if ( $defaultItem.length ) {
 				return $defaultItem[method]();
-			} else {
+			} else { //설정된 값이 없으면 items중 가장작은 단위를 찾아 return;
 				var returnValue = Number.MAX_VALUE;
 				$cont.find(options.itemElem).each(function(i,o){
 					var ow = $(o)[method]();
@@ -418,12 +416,20 @@ function Fallin(wrap, opts){
 	}
 	
 	function getItems(){
-		return $cont.find(options.itemElem).filter(':not(.default_item)');
+		return $cont.find(options.itemElem).filter(':not(.default_item,.fallin_ignore)');
 	}
 
 
 }
 
+//left와 top을 비교하여 같으면 true 반환.
+function isSamePos(o, t){
+	if ( !o.left || !o.top || !t.left || !t.top ) return false;
+	else if ( o.left == t.left && o.top == t.top ) return true;
+	else return false;
+}
+
+//Utils
 // array 데이터중 가장 작은 수를 가진 index를 리턴.
 function getMinIndex(arr){
 	var c = Number.MAX_VALUE, r = 0, i, len;
@@ -436,7 +442,6 @@ function getMinIndex(arr){
 	return r;
 }
 
-//Utils
 // array 데이터중 가장 큰 수를 리턴.
 function getMaxValue(arr){
 	var r = Number.MIN_VALUE, i, len;
@@ -505,7 +510,7 @@ $(function(){
 
 	$('.fallin_wrap').each(function(i,o){
 		var dt = $(o).data('fallin-options'), options;
-		//constructor가 Object 형식이 아니면 default로 진행.
+		//constructor가 Object가 아니면 default로 진행.
 		if ( dt && dt.constructor !== Object ) {
 			console.error( 'fallin : options은 JSON 형태로 입력해주세요.')
 			dt = null;
