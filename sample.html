@@ -129,7 +129,7 @@
 		$('.wrap').find('.fallin_item').each(function(i,o){
 			$(o).addClass('w'+(Math.floor(Math.random()*4))).addClass('h'+(Math.floor(Math.random()*4)));
 		})
-		dd = new Fallin($('.wrap')[0], {type:'square'});
+		dd = new Fallin($('.wrap')[0], {type:'grid', easing:'easeIn'});
 		//addItem();
 	});
 
@@ -146,7 +146,7 @@
 			$(o).addClass('w'+(Math.floor(Math.random()*4))).addClass('h'+(Math.floor(Math.random()*4)));
 		})
 		$wrap.fallin('append', $s , {
-			'from':'right', 
+			'from':'end', 
 			'delay':20,
 			'fromElem':$('.btn_add')
 		});

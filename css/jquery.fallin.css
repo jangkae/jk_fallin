@@ -1,3 +1,18 @@
+.fallin_wrap .fallin_empty {
+	opacity: 0.2;
+	animation-name:fallin_empty_fadeIn;
+	animation-duration: 0.2s;
+}
+
+@keyframes fallin_empty_fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity:0.2;
+	}
+}
+
 /* append effects */
 .fallin_added_default {
 	animation-name: fallin_added_default;
@@ -24,9 +39,40 @@
 
 @keyframes fallin_added_fadeIn {
 	from {
-		opacity: 0.3;
+		opacity: 0;
 	}
 	to {
 		opacity:1;
 	}
 }
+
+/*remove*/
+.fallin_remove_default {
+	animation-name: fallin_remove_default;
+	animation-duration: 0.3s;
+	transition-timing-function: ease-out;	
+}
+
+@keyframes fallin_remove_default {
+	from {
+		opacity:1;
+		transform:scale(1);
+	}
+	to {
+		opacity:0;
+		transform:scale(0);
+	}
+}
+
+.fallin_remove_fadeIn {
+	animation-name: fallin_remove_fadeIn;
+	animation-duration: 0.3s;
+	transition-timing-function: ease-out;		
+}
+
+@keyframes fallin_remove_fadeIn {
+	to {
+		opacity:0;
+	}
+}
+
