@@ -33,8 +33,7 @@ if ( !$.easing.easeOutCubic ) {
  **/
 
 var cls = {
-	wrap:'fallin_wrap',
-	cont:'fallin_container',
+	cont:'fallin_wrap',
 	item:'fallin_item',
 	ignore:'fallin_ignore',
 	empty:'fallin_empty',
@@ -63,32 +62,25 @@ var indexCounter = 0;
 
 window.Fallin = Fallin;
 
-function Fallin(wrap, opts){
+function Fallin(cont, opts){
 	var _this = this, options;
-	var $wrap = wrap instanceof $ ? wrap : $(wrap);
-	var $cont = $('<div />').addClass(cls.cont);
-	var $items, wrapWidth, gridWidth, gridHeight, colNum, mat, contHeight, timer;
+	var $cont = cont instanceof $ ? cont : $(cont);
+	var $items, contWidth, gridWidth, gridHeight, colNum, mat, contHeight, timer;
 	var id = indexCounter++;
 	var emptyTileTimer;
 
 	resetOptions(opts, true);
-	//console.log (options);
-	//초기 container 설정
-	$wrap.addClass(cls.wrap);
-	if ( $wrap.find('> *').length ) $cont.append($wrap.find('> *')).appendTo($wrap);
+
+	$cont.addClass(cls.cont).css('position','relative').find('> *').css('position','absolute');
 
 	//resize 이벤트
 	bindResize();
-
-	//css 설정
-	$cont.css('position','relative');
-	getItems().css('position','absolute');
 
 	var du = options.skipFirstMotion ? 0 : options.duration;
 	activeFn(du);
 
 	// public
-	wrap.fallinObj = this;
+	cont.fallinObj = this;
 
 	this.activeFn = activeFn;
 	this.append = append;
@@ -115,7 +107,7 @@ function Fallin(wrap, opts){
 		//console.log ( 'activeFn' );
 		if ( typeof du == 'undefined' ) du = options.duration;
 		setTargetPosition();
-		containerMove(contHeight, du);
+		setContHeight(contHeight, du);
 		itemsMove(du);
 		removeEmptyTile();
 		if ( emptyTileTimer ) clearTimeout(emptyTileTimer);
@@ -124,16 +116,17 @@ function Fallin(wrap, opts){
 
 	function setTargetPosition(){
 		$items = getItems();
-		wrapWidth = $wrap.width();
+		contWidth = $cont.width();
 		gridWidth = getGridSize('width');
 		gridHeight = getGridSize('height');
 		colNum = getColNum();
+		var mv = getMarginValue();
 
-		//console.log ( wrapWidth , gridWidth, gridHeight, colNum );
+		//console.log ( contWidth , gridWidth, gridHeight, colNum );
 		//정사각형일때
 		if ( options.type == 'grid' ) {
 			mat = [];
-			mat.push ( getEmptyRow(gridWidth , wrapWidth) );
+			mat.push ( getEmptyRow(gridWidth , contWidth) );
 
 			$items.each(function(idx,o){
 				var $item = $(o);
@@ -194,13 +187,13 @@ function Fallin(wrap, opts){
 				// matrix에 추가.
 				for ( l = 0 ; l < w ; l++ ) {
 					for ( m = 0 ; m < h ; m++ ) {
-						if ( !mat[m+i] ) mat.push(getEmptyRow(gridWidth,wrapWidth));
+						if ( !mat[m+i] ) mat.push(getEmptyRow(gridWidth,contWidth));
 						mat[i+m][j+l] = 1;
 					}
 				}
 
 				$item.data({
-					'fallin.tx':j*(gridWidth+options.marginWidth),
+					'fallin.tx':j*(gridWidth+options.marginWidth)+mv,
 					'fallin.ty':i*(gridHeight+options.marginHeight)
 				});
 
@@ -222,7 +215,7 @@ function Fallin(wrap, opts){
 				//target column 요소가 들어갈 자리.
 				var tc = getMinIndex(mat);
 				$item.data({
-					'fallin.tx':tc*(gridWidth+options.marginWidth),
+					'fallin.tx':tc*(gridWidth+options.marginWidth)+mv,
 					'fallin.ty':mat[tc]
 				});
 				mat[tc] += $item.outerHeight(true) + options.marginHeight;
@@ -259,8 +252,19 @@ function Fallin(wrap, opts){
 		}
 	}
 
-	function containerMove( targetHeight, du ){
-		wrapWidth = $wrap.width();
+	function setContHeight( targetHeight, du ){
+		if ( !options.containerHeightControl || !targetHeight ) return;
+		var p = {'height':targetHeight};
+		if ( du ) {
+			$cont.stop().animate(p, {
+				'easing':options.easing,
+				'duration':du
+			});
+		} else {
+			$cont.stop().css(p);
+		}
+		/*
+		contWidth = $cont.width();
 		$cont.stop();
 		var contProp = {
 			'left':getMarginValue(),
@@ -278,6 +282,7 @@ function Fallin(wrap, opts){
 		} else {
 			$cont.css(contProp);
 		}
+		*/
 
 	}
 
@@ -332,7 +337,7 @@ function Fallin(wrap, opts){
 			$d.addClass(cls.adding);
 			removeEmptyTile();
 			setTargetPosition();
-			containerMove(contHeight, du);
+			setContHeight(contHeight, du);
 			getItems().filter(':not(.'+cls.adding+')').each(function(i,o){
 				itemMove($(o), du);
 			});
@@ -391,7 +396,7 @@ function Fallin(wrap, opts){
 		if ( !$dom ) return;
 		if ( !effect ) effect = 'default';
 		if ( $dom.constructor == String ) $dom = $cont.find($dom);
-		if ( !$dom instanceof $ || !$dom.length ) return;
+		if ( !($dom instanceof $) || !$dom.length ) return;
 
 		var effectClass = cls.remove+effect;
 		$dom.addClass(effectClass).addClass(cls.ignore);
@@ -411,14 +416,15 @@ function Fallin(wrap, opts){
 		var divStr = "<div class='"+cls.item+' '+cls.empty+' '+cls.ignore+"'></div>";
 		var w = getGridSize('width')+options.marginWidth;
 		var h = getGridSize('height')+options.marginHeight;
+		var mv = getMarginValue();
 		for ( var i = 0, t = mat.length ; i < t ; i++ ) {
 			for ( var j = 0, tt = mat[i].length ; j < tt ; j++ ) {
 				if ( mat[i][j] != 1 ) {
 					$cont.append($(divStr).css({
 						'position':'absolute',
-						'left':j*w,
+						'left':j*w+mv,
 						'top':i*h
-					}))
+					}));
 				}
 			}
 		}
@@ -432,17 +438,15 @@ function Fallin(wrap, opts){
 	function bindResize(){
 		$(window).bind('resize.fallin'+id,function(){
 			if ( timer ) clearTimeout( timer );
-			if ( !$wrap.length ) destroy();
 
 			timer = setTimeout(function(){
-				var changedWrapWidth = wrapWidth != $wrap.width();
+				var changedContWidth = contWidth != $cont.width();
 				var changedColNum = colNum != getColNum();
 				var changedGridSize = gridWidth != getGridSize('width') || gridHeight != getGridSize('height');
 				var isResetState = changedColNum || changedGridSize;
 
-				//다른것은 변하지 않고 wrapWidth만 변경되면 container만 움직임. 아니면 activeFn
-				if ( isResetState ) activeFn();
-				else if ( changedWrapWidth && options.align != 'left' ) containerMove();
+				//다른것은 변하지 않고 contWidth만 변경되면 container만 움직임. 아니면 activeFn
+				if ( changedColNum || changedGridSize || (changedContWidth && options.align != 'left') ) activeFn();
 			}, 30);
 
 		});
@@ -458,7 +462,7 @@ function Fallin(wrap, opts){
 
 	//private methods
 	function getColNum(){
-		var cw = $wrap.width(), mw = options.marginWidth, gw = getGridSize('width');
+		var cw = $cont.width(), mw = options.marginWidth, gw = getGridSize('width');
 		var colNum = Math.floor( ( cw+mw ) / ( gw+mw ) );
 		if ( colNum > $items.length ) colNum = $items.length;
 		return colNum;
@@ -472,7 +476,7 @@ function Fallin(wrap, opts){
 
 	// align으로 인한 left 추가값 계산 후 리턴.
 	function getMarginValue(){
-		var v = 0, cw = $wrap.width(), mw = options.marginWidth, gw = getGridSize('width'), cn = getColNum() ;
+		var v = 0, cw = $cont.width(), mw = options.marginWidth, gw = getGridSize('width'), cn = getColNum() ;
 		//remain width 계산
 		var rw = cw-(cn*(gw+mw)-mw);
 		if ( options.align == 'center' ) {
@@ -600,7 +604,7 @@ function confirmOptions( o, defaults, exceptionArr ) {
 				o[n] = Boolean(o[n]);
 			}
 			break;
-			case 'object':
+			//case 'object':
 			default:
 			break;
 		}
@@ -608,9 +612,9 @@ function confirmOptions( o, defaults, exceptionArr ) {
 }
 
 function hasValue(t, arr){
-	var r = false, i, t;
-	if ( !arr || !arr instanceof Array || !arr.length ) return r;
-	for ( i = 0, t = arr.length ; i < t ; i++ ) {
+	var r = false, i, tn;
+	if ( !arr || !(arr instanceof Array) || !arr.length ) return r;
+	for ( i = 0, tn = arr.length ; i < tn ; i++ ) {
 		if ( arr[i] == t ) {
 			r = true;
 			break;
@@ -667,7 +671,7 @@ $(function(){
 		var dt = $(o).data('fallin-options'), options;
 		//constructor가 Object가 아니면 default로 진행.
 		if ( dt && dt.constructor !== Object ) {
-			console.error( 'fallin : options은 JSON 형태로 입력해주세요.')
+			console.error( 'fallin : options은 JSON 형태로 입력해주세요.');
 			dt = null;
 		}
 		o.fallinObj = new Fallin(o, options);
