@@ -285,7 +285,7 @@ function Fallin(cont, opts){
 			pos : 특정 좌표에서부터
 			*/
 			'from':'default',
-			//from에 따른 선택적
+			//from에 따른 선택적 사용
 			'fromElem':null,
 			'fromLeft':0,
 			'fromTop':0,
@@ -399,7 +399,7 @@ function Fallin(cont, opts){
 		colNum = getColNum();
 		alignMargin = getAlignMargin();
 
-		console.log ( 'updateFallinVar' , $items, contWidth , gridWidth, gridHeight, colNum, alignMargin, mWidth, mHeight);
+		//console.log ( 'updateFallinVar' , $items, contWidth , gridWidth, gridHeight, colNum, alignMargin, mWidth, mHeight);
 	}
 	/*
 		sqaure타입에서만 작동함. 빈 곳 채워넣기 기능.
