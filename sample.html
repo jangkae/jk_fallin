@@ -40,10 +40,18 @@
 			.fallin_item {
 				width:50px;
 				height:50px;
-				border:1px solid #333;
+				border:10px solid #333;
 				background:#999;
 				position:absolute;
 				border-radius:5px;
+			}
+
+			.fallin_sizer {
+				width:50px;
+				height:50px;
+				margin-left:10px;
+				margin-top:10px;
+				border-width:10px;
 			}
 
 			.w2 {
@@ -62,6 +70,7 @@
 			.h3 {
 				height:174px;				
 			}
+
 
 			@media (min-width: 768px) {
 				.wrap{
@@ -103,7 +112,7 @@
 			<button class="btn_reset">리셋</button>
 		</div>
 		
-		<div class="wrap"><div class="fallin_item"></div><div class="fallin_item"></div><div class="fallin_item"></div><div class="fallin_item"></div><div class="fallin_item"></div></div>
+		<div class="wrap"><div class="fallin_item fallin_sizer"></div><div class="fallin_item"></div><div class="fallin_item"></div><div class="fallin_item"></div><div class="fallin_item"></div><div class="fallin_item"></div></div>
 		
 		<!--
 		<div class="wrap fallin_wrap" data-fallin-options='{"marginWidth":20,"marginHeight":20}'><div class="item"></div><div class="item"></div><div class="item"></div><div class="item"></div><div class="item"></div></div>
@@ -127,6 +136,7 @@
 
 		//dd = new Fallin($('.wrap')[0], {type:'rectangle'});
 		$('.wrap').find('.fallin_item').each(function(i,o){
+			if ( $(o).is('.fallin_sizer') ) return true;;
 			$(o).addClass('w'+(Math.floor(Math.random()*4))).addClass('h'+(Math.floor(Math.random()*4)));
 		})
 		dd = new Fallin($('.wrap')[0], {type:'grid', easing:'easeIn'});
