@@ -58,7 +58,7 @@ var defaultOptions = {
 	align:'center',
 	easing:'easeOutCubic',
 	skipFirstMotion:true,
-	fillEmpty:true,
+	fillEmpty:false,
 	duration:500
 };
 
