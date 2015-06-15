@@ -56,12 +56,12 @@ $(container).fallin({options});
 정렬시킬 요소를 선택할 jQuery 셀렉터 입니다.<br>
 기본값 : ".fallin_item"
 
-#### itemWidth
+#### gridWidth
 그리드의 폭(width)을 설정합니다.<br>
 최소값 : 10 (최소값 이하로 설정되어 있으면 정렬시킬 요소의 width값으로 설정됩니다.)<br>
 기본값 : 0
 
-#### itemHeight
+#### gridHeight
 그리드의 높이(height)을 설정합니다.<br>
 최소값 : 10 (최소값 이하로 설정되어 있으면 정렬시킬 요소의 height값으로 설정됩니다.)<br>
 기본값 : 0

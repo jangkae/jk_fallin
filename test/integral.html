@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="title" content="fallin jQuery plugin">
+		<meta name="author" content="jangkae">
+		<meta name="keywords" content="jQuery plugin masonry element sort">
+		<meta http-equiv="content-type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<title>fallin plugin test</title>
+
+		<link href="../dist/jquery.fallin.css" rel="stylesheet" type="text/css">
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<script src="../dist/jquery.fallin.js"></script>
+
+		<style>
+			body {
+				margin:0;
+				padding:0;
+			}
+
+			h1 {
+				text-align: center;
+			}
+
+			.btn_container {
+				text-align: center;
+				margin-bottom:50px;
+			}
+
+			.fallin_wrap {
+				width:400px;
+				min-height:400px;
+				margin:0 auto;
+				background:#eee;
+				position:relative;
+			}
+
+			.fallin_item {
+				width:50px;
+				height:50px;
+				border:1px solid #333;
+				background:#999;
+				position:absolute;
+				border-radius:5px;
+			}
+
+			.setting_box {
+				position:fixed;
+				z-index:1;
+				top:0;
+			}
+
+			@media (min-width: 768px) {
+				.fallin_wrap{
+					width:600px;
+				}
+			}
+
+			@media (min-width: 1000px) {
+				.fallin_wrap{
+					width:800px;
+				}
+			}
+
+			@media (min-width: 1200px) {
+				.fallin_wrap{
+					width:1000px;
+				}
+			}
+
+			@media (min-width: 1600px) {
+				.fallin_wrap{
+					width:1400px;
+				}
+			}
+
+			@media (min-width: 2000px) {
+				.fallin_wrap{
+					width:100%;
+				}
+			}
+
+
+		</style>
+	</head>
+	<body>
+		<h1>fallin test</h1>
+		<div class="setting_box">
+			<div class="element_box">
+				<h2>Element setting</h2>
+				<form>
+					<ul>
+						<li>
+							<label for="elementWidth">elementWidth</label>
+							<input type="text" size="3" name="elementWidth">
+						</li>
+						<li>
+							<label for="elementHeight">elementHeight</label>
+							<input type="text" size="3" name="elementHeight">
+						</li>
+						<li>
+							<label for="marginTop">marginTop</label>
+							<input type="text" size="3" name="marginTop">
+						</li>
+						<li>
+							<label for="marginRight">marginRight</label>
+							<input type="text" size="3" name="marginRight">
+						</li>
+						<li>
+							<label for="marginBottom">marginBottom</label>
+							<input type="text" size="3" name="marginBottom">
+						</li>
+						<li>
+							<label for="marginLeft">marginLeft</label>
+							<input type="text" size="3" name="marginLeft">
+						</li>
+						<li>
+							<label for="paddingTop">paddingTop</label>
+							<input type="text" size="3" name="paddingTop">
+						</li>
+						<li>
+							<label for="paddingRight">paddingRight</label>
+							<input type="text" size="3" name="paddingRight">
+						</li>
+						<li>
+							<label for="paddingBottom">paddingBottom</label>
+							<input type="text" size="3" name="paddingBottom">
+						</li>
+						<li>
+							<label for="paddingLeft">paddingLeft</label>
+							<input type="text" size="3" name="paddingLeft">
+						</li>
+						<li>
+							<label for="borderWidth">borderWidth</label>
+							<input type="text" size="3" name="borderWidth">
+						</li>
+					</ul>
+				</form>
+			</div>
+			<div class="option_box">
+				<h2>Options</h2>
+				<form>
+					<ul>
+					</ul>
+				</form>
+			</div>
+			<div class="method_box">
+			</div>
+			<div class="row">
+				<button class="btn_apply">적용</button>
+				<button class="btn_reset">리셋</button>
+			</div>
+		</div>
+		
+		<div class="fallin_wrap">
+			<div class="fallin_item fallin_sizer"></div>
+			<div class="fallin_item"></div>
+			<div class="fallin_item"></div>
+			<div class="fallin_item"></div>
+			<div class="fallin_item"></div>
+			<div class="fallin_item"></div>
+			<div class="fallin_item"></div>
+			<div class="fallin_item"></div>
+			<div class="fallin_item"></div>
+			<div class="fallin_item"></div>
+			<div class="fallin_item"></div>
+			<div class="fallin_item"></div>
+			<div class="fallin_item"></div>
+			<div class="fallin_item"></div>
+			<div class="fallin_item"></div>
+			<div class="fallin_item"></div>
+			<div class="fallin_item"></div>
+		</div>
+		
+		<!--
+		<div class="wrap fallin_wrap" data-fallin-options='{"marginWidth":20,"marginHeight":20}'><div class="item"></div><div class="item"></div><div class="item"></div><div class="item"></div><div class="item"></div></div>
+		-->
+
+<script>
+
+$(function(){
+
+	setItemClass($('.fallin_item:not(.fallin_sizer)'));
+	setElementBox();
+	setOptionBox();
+	setItemSize();
+	applyOption();
+});
+
+function setElementBox(){
+	var $sizer = $('.fallin_sizer'), $o, nm;
+	$('.element_box input').each(function(i,o){
+		$o = $(o), nm = $o.attr('name');
+		if ( nm == 'elementWidth' ) nm = 'width';
+		else if ( nm == 'elementHeight' ) nm = 'height';
+		$o.val($sizer.css(nm));
+	});
+
+	$('.element_box input').bind('change',function(){
+		setItemSize(true);
+		applyOption();
+	});
+}
+
+function setOptionBox(){
+	var options = Fallin.defaultOptions;
+
+	var str = '';
+
+	for ( var nm in options ) {
+		var v = options[nm];
+		//console.log ( nm , v );
+		str += '<li><label for="'+nm+'">'+nm+'</label>';
+		if ( nm == 'type' ) {
+			str += getRadioInput(['grid', 'fixedWidth', 'auto'], nm, v);
+		} else if ( nm == 'itemSelector' ) {
+			str += getTextInput(v, nm, true);
+		} else if ( nm == 'align' ) {
+			str += getRadioInput(['left', 'center', 'right'], nm, v);
+		} else if ( nm == 'easing' ) {
+			var arr = [];
+			for ( var k in $.easing ) {
+				arr.push(k);
+			}
+			str += getSelectBox(arr, nm, v);
+		} else {
+			var to = typeof v;
+			switch ( to ) {
+				case 'string' : 
+				case 'number' :
+				str += getTextInput(v, nm);
+				break;
+				case 'boolean' :
+				str += getCheckBoxInput( v, nm );
+				break;
+				default:
+				console.log(to, '타입 정해야 함.')
+				break;
+			}
+		}
+		str += '</li>';
+	}
+	//console.log ( str );
+	$('.option_box form ul').append(str);
+
+	$('.option_box form ul').find('input, select').bind('change',function(e){
+		setItemSize();
+		applyOption();
+	});
+}
+
+function getRadioInput(arr, nm, activeStr){
+	var r = '';
+	for ( var i = 0, t = arr.length ; i < t ; i++ ) {
+		r += '<input type="radio" value="'+arr[i]+'" name="'+nm+'"'+(arr[i]==activeStr?' checked':'')+'>'+arr[i];
+	}
+	return r;
+}
+
+function getTextInput(str, nm, disabled) {
+	var s = isNaN(parseInt(str)) ? 12 : 3;
+	return '<input type="text" size="'+s+'" value="'+str+'" name="'+nm+'"'+(disabled?' disabled':'')+'>';
+}
+
+function getCheckBoxInput(checked, nm) {
+	return '<input type="checkbox" name="'+nm+'" '+(checked?' checked':'')+'>활성';
+}
+
+function getSelectBox(arr, nm, activeStr) {
+	var r = '<select name="'+nm+'">';
+	for ( var i = 0, t = arr.length; i < t; i++ ) {
+		r += '<option value="'+arr[i]+'"'+(arr[i]==activeStr?' selected':'')+'>'+arr[i]+'</option>'
+	}
+	return r += '</select>';
+}
+
+function applyOption(){
+	var $inputs = $('.option_box form ul').find('input, select');
+	var op = {};
+
+	//input 검사
+	$inputs.each(function(i,o){
+		var $o = $(o), v = $o.val();
+		if ( $o.is('[type=radio]') && !$o.prop('checked') ) return true;
+		if ( $o.is('[type=checkbox]') ) v = $o.prop('checked');
+		op[ $(o).attr('name') ] = v;
+	});
+
+	//Element 설정
+	$('.fallin_item').removeClass('grid fixedWidth').addClass(op.type);
+	$('.fallin_wrap').fallin('resetOptions', op);
+}
+
+function setItemClass($items){
+	$items.each(function(i,o){
+		$(o).addClass('grid_w'+(Math.ceil(Math.random()*3))).addClass('grid_h'+(Math.ceil(Math.random()*3)));;
+	});
+}
+
+var oldType;
+
+function setItemSize(exec){
+
+	var tStr = $('.option_box form input[name=type]:checked').val();
+	if ( tStr == 'auto' && oldType == 'grid' ) tStr = 'fixedWidth';
+	else if ( tStr == 'auto' && oldType == 'fixedWidth' ) tStr = 'grid';
+	
+	var prop = {}, $o, nm, v;
+	$('.element_box input').each(function(i,o){
+		$o = $(o), nm = $o.attr('name'), v = $o.val();
+		if ( !v.match('px') && !v.match('em') && !v.match('%') && !v.match('auto') ) $o.val(parseInt(v)+'px');
+		if ( nm == 'elementWidth' ) nm = 'width';
+		else if ( nm == 'elementHeight' ) nm = 'height';
+		prop[nm] = $o.val();
+	});
+	
+	$('.fallin_item').css(prop);
+
+	$('.fallin_item:not(.fallin_sizer)').each(function(i,o){
+		$o = $(o);
+		if ( tStr == 'grid' && i%3 != 0 ) {
+			calcItemSize($o, 'width', prop);
+			calcItemSize($o, 'height', prop);
+		} else if ( tStr == 'fixedWidth' ) {
+			var h = parseInt($('input[name=elementHeight]').val());
+			var th = Math.round(h + (Math.random()*(h*3)));
+			$o.height( th );
+		}
+	});
+
+	oldType = tStr;
+	function calcItemSize($o, tar, prop){
+		var r = 'w', a1 = 'Left', a2 = 'Right', a3 = 'Width', n, ww, p1,p2,m1,m2,bw,mw;
+		if ( tar == 'height' ) {
+			r = 'h';
+			a1 = 'Top';
+			a2 = 'Bottom';
+			a3 = 'Height';
+		}
+
+		var reg1 = new RegExp('grid_'+r+'\\d*');
+		var reg2 = new RegExp('grid_'+r);
+		var cls = $o.attr('class').match(reg1);
+		if ( cls && cls.length ) {
+			n = parseInt(cls[0].replace(reg2,''));
+			if ( n <= 1) return;
+			ww = parseInt(prop[tar]) * n;
+			p1 = parseInt(prop['padding'+a1]) || 0;
+			p2 = parseInt(prop['padding'+a2]) || 0;
+			m1 = parseInt(prop['margin'+a1]) || 0;
+			m2 = parseInt(prop['margin'+a2]) || 0;
+			bw = parseInt(prop['borderWidth']) || 0;
+			mw = parseInt($('input[name=margin'+a3+']').val()) || 0;
+
+			//console.log ( ww, p1, p2, m1, m2, bw, mw );
+			$o[tar] ( (p1+p2+m1+m2+(bw*2)+mw) * (n-1) + ww);
+		}
+	}
+}
+
+</script>
+
+	</body>
+</html>
