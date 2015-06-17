@@ -46,6 +46,10 @@
 				border-radius:5px;
 			}
 
+			.fallin_item img {
+				width:100%;
+			}
+
 			.setting_box {
 				position:fixed;
 				z-index:1;
@@ -181,7 +185,6 @@
 <script>
 
 $(function(){
-
 	setItemClass($('.fallin_item:not(.fallin_sizer)'));
 	setElementBox();
 	setOptionBox();
@@ -236,7 +239,7 @@ function setOptionBox(){
 				str += getCheckBoxInput( v, nm );
 				break;
 				default:
-				console.log(to, '타입 정해야 함.')
+				console.log(to, '옵션박스 타입 정의해야 함.')
 				break;
 			}
 		}
@@ -318,8 +321,9 @@ function setItemSize(exec){
 	
 	$('.fallin_item').css(prop);
 
+	var $sizer = $('.fallin_sizer');
 	$('.fallin_item:not(.fallin_sizer)').each(function(i,o){
-		$o = $(o);
+		$o = $(o).width($sizer.width()).height($sizer.height());
 		if ( tStr == 'grid' && i%3 != 0 ) {
 			calcItemSize($o, 'width', prop);
 			calcItemSize($o, 'height', prop);
@@ -346,7 +350,7 @@ function setItemSize(exec){
 		if ( cls && cls.length ) {
 			n = parseInt(cls[0].replace(reg2,''));
 			if ( n <= 1) return;
-			ww = parseInt(prop[tar]) * n;
+			ww =  $('.fallin_sizer')[tar]() * n;
 			p1 = parseInt(prop['padding'+a1]) || 0;
 			p2 = parseInt(prop['padding'+a2]) || 0;
 			m1 = parseInt(prop['margin'+a1]) || 0;

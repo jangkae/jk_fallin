@@ -84,6 +84,7 @@ function Fallin(cont, opts){
 
 	var du = options.skipFirstMotion ? 0 : options.duration;
 	activeFn(du);
+	imgLoadedCallActive($cont, du); // image 로드 후 재정렬
 
 	// public
 	cont.fallinObj = this;
@@ -122,7 +123,7 @@ function Fallin(cont, opts){
 	}
 
 	function activeFn(du){
-		//console.log ( 'activeFn' );
+		console.log ( 'activeFn' );
 		if ( typeof du == 'undefined' ) du = options.duration;
 		updateFallinVar();
 		setTargetPosition();
@@ -383,7 +384,10 @@ function Fallin(cont, opts){
 						'visibility':'visible'
 					}).addClass(effectClass);
 					itemMove($o, du);
-					if ( i == newItemLength - 1 ) resetEmptyTile(du);
+					if ( i == newItemLength - 1 ) {
+						resetEmptyTile(du);
+						imgLoadedCallActive($newItems);
+					}
 				}, op.delay*i);
 			});
 		} else {
@@ -570,6 +574,25 @@ function Fallin(cont, opts){
 			return rv;
 		}
 		*/
+	}
+
+	function imgLoadedCallActive($tar, du){
+		var $imgs = $tar.find('img'), cnt=0, ln;
+		if ( !$imgs.length ) return;
+		
+		ln = $imgs.length;
+		$imgs.each(function(i,o){
+			$.ajax({
+				'url':$(o).attr('src'),
+				'success':chkCounter,
+				'error':chkCounter
+			});
+		});
+		function chkCounter(){
+			if ( ln == ++cnt ) {
+				activeFn(du);
+			}
+		}
 	}
 
 	// type 판별해서 return, 현재는 옵션만 리턴.
