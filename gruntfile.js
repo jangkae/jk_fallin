@@ -9,13 +9,13 @@
                 banner: '/* <%= grunt.template.today("yyyy-mm-dd") %> */ '
             },
             build: {
-                src: 'js/jquery.fallin.js',
-                dest: 'js/jquery.fallin.min.js'
+                src: 'dist/jquery.fallin.js',
+                dest: 'dist/jquery.fallin.min.js'
             }
         },
         //jshint
         jshint: {
-            all: ['js/jquery.fallin.js'],
+            all: ['dist/jquery.fallin.js'],
             options:{
                 reporter: require('jshint-stylish')
             }

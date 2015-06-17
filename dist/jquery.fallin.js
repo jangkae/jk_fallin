@@ -45,7 +45,7 @@ var cls = {
 
 var tagStr = {
 	empty:'<div class="'+cls.item+" "+cls.empty+" "+cls.ignore+'"></div>'
-}
+};
 
 var defaultOptions = {
 	type:'grid',
@@ -600,7 +600,7 @@ function Fallin(cont, opts){
 		var ow = 0, r = 'fixedWidth';
 		getItems().each(function(i,o){
 			var cw = $(o).outerWidth();
-			if ( !i ) ow = cw
+			if ( !i ) ow = cw;
 			else {
 				if ( ow != cw ) {
 					r = 'grid';
