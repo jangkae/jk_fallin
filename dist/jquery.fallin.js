@@ -724,6 +724,12 @@ var methods = {
 			o.fallinObj.append(dom, opts);
 		});
 	},
+	'removeElem':function(dom, effect){
+		return this.each(function(i,o){
+			if ( !o.fallinObj ) return;
+			o.fallinObj.removeElem(dom, effect);
+		});
+	},
 	'resetOptions':function(opts){
 		return this.each(function(i,o){
 			if ( !o.fallinObj ) return;

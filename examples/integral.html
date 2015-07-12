@@ -18,6 +18,7 @@
 			body {
 				margin:0;
 				padding:0;
+				font-family: verdana;
 			}
 
 			h1 {
@@ -54,6 +55,22 @@
 				position:fixed;
 				z-index:1;
 				top:0;
+				height:100%;
+				background:rgba(0, 0, 0, 0.1);;
+				width:280px;
+				padding:20px;
+				font-size:12px;
+				font-family: verdana;
+			}
+
+			.method_box button {
+				padding:3px 10px;
+				font-size:14px;
+				margin-bottom:10px;
+			}
+
+			label {
+				margin-right:10px;
 			}
 
 			@media (min-width: 768px) {
@@ -90,7 +107,7 @@
 		</style>
 	</head>
 	<body>
-		<h1>fallin test</h1>
+		<h1>Fallin test</h1>
 		<div class="setting_box">
 			<div class="element_box">
 				<h2>Element setting</h2>
@@ -151,10 +168,11 @@
 				</form>
 			</div>
 			<div class="method_box">
-			</div>
-			<div class="row">
-				<button class="btn_apply">적용</button>
-				<button class="btn_reset">리셋</button>
+				<h2>Methods</h2>
+				<ul>
+					<li><button class="appendBtn">append</button></li>
+					<li><button class="removeBtn">remove</button></li>
+				</li>
 			</div>
 		</div>
 		
@@ -186,8 +204,10 @@
 
 $(function(){
 	setItemClass($('.fallin_item:not(.fallin_sizer)'));
+	bindRemoveElem($('.fallin_item:not(.fallin_sizer)'));
 	setElementBox();
 	setOptionBox();
+	setMethodBox();
 	setItemSize();
 	applyOption();
 });
@@ -202,9 +222,11 @@ function setElementBox(){
 	});
 
 	$('.element_box input').bind('change',function(){
-		setItemSize(true);
+		setItemSize();
 		applyOption();
 	});
+
+	$('label[for^=type]').after('<br>');
 }
 
 function setOptionBox(){
@@ -254,6 +276,31 @@ function setOptionBox(){
 	});
 }
 
+function setMethodBox(){
+	var $a = $('.appendBtn');
+	var $r = $('.removeBtn');
+	var $item = $('<div/>');
+	$a.bind('click',function(){
+		var $items = '';
+		for ( var i = 0 ; i < 10 ; i ++ ) {
+			$items += '<div></div>';
+		}
+		$items = $($items);
+		setItemClass($items);
+		setItemSize($items);
+		bindRemoveElem($items);
+		$('.fallin_wrap').fallin('append',$items,{
+			'from':'end',
+			'delay':20
+		});
+	});
+	$r.bind('click',function(){
+		var $items = $('.fallin_item:not(.fallin_sizer)');
+		var $tar = $items.eq(Math.floor(Math.random()*$items.length));
+		$('.fallin_wrap').fallin('removeElem',$tar);
+	});
+}
+
 function getRadioInput(arr, nm, activeStr){
 	var r = '';
 	for ( var i = 0, t = arr.length ; i < t ; i++ ) {
@@ -277,6 +324,12 @@ function getSelectBox(arr, nm, activeStr) {
 		r += '<option value="'+arr[i]+'"'+(arr[i]==activeStr?' selected':'')+'>'+arr[i]+'</option>'
 	}
 	return r += '</select>';
+}
+
+function bindRemoveElem($items){
+	$items.bind('click',function(e){
+		$('.fallin_wrap').fallin('removeElem', $(this));
+	});
 }
 
 function applyOption(){
@@ -304,7 +357,7 @@ function setItemClass($items){
 
 var oldType;
 
-function setItemSize(exec){
+function setItemSize($items){
 
 	var tStr = $('.option_box form input[name=type]:checked').val();
 	if ( tStr == 'auto' && oldType == 'grid' ) tStr = 'fixedWidth';
@@ -319,10 +372,11 @@ function setItemSize(exec){
 		prop[nm] = $o.val();
 	});
 	
-	$('.fallin_item').css(prop);
+	$items = $items || $('.fallin_item');
+	$items.css(prop);
 
 	var $sizer = $('.fallin_sizer');
-	$('.fallin_item:not(.fallin_sizer)').each(function(i,o){
+	$items.filter(':not(.fallin_sizer)').each(function(i,o){
 		$o = $(o).width($sizer.width()).height($sizer.height());
 		if ( tStr == 'grid' && i%3 != 0 ) {
 			calcItemSize($o, 'width', prop);
